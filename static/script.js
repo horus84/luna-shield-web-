@@ -76,42 +76,59 @@ document.addEventListener('DOMContentLoaded', function() {
       statusArea.style.display = 'none';
     }
   
-    function showResults(data) {
-      // Update basic info
-      fileNameSpan.textContent = data.filename || 'N/A';
-      verdictSpan.textContent = data.verdict || 'Error';
-      totalFramesSpan.textContent = data.total_frames_processed ?? 'N/A';
-      realCountSpan.textContent = data.real_frames ?? 'N/A';
-      deepfakeCountSpan.textContent = data.deepfake_frames ?? 'N/A';
-  
-      // Calculate confidence percentage
-      const confidence = calculateConfidence(data);
-      confidenceMeter.style.width = `${confidence}%`;
-      confidenceValue.textContent = `${confidence}%`;
-      
-      // Update meter color based on confidence
-      if (confidence >= 70) {
-        confidenceMeter.style.backgroundColor = '#2b8a3e';
-      } else if (confidence >= 40) {
-        confidenceMeter.style.backgroundColor = '#e67700';
-      } else {
-        confidenceMeter.style.backgroundColor = '#c92a2a';
-      }
-  
-      // Apply verdict styling
-      verdictSpan.className = 'verdict-badge';
-      if (data.verdict) {
-        const verdictClass = data.verdict.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '');
-        verdictSpan.classList.add(`verdict-${verdictClass}`);
-      }
-  
-      resultsArea.style.display = 'block';
-      
-      // Smooth scroll to results
-      setTimeout(() => {
-        resultsArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
+    function showResults(responseData) { // responseData is the full {success: true, results: {...}} object
+    const data = responseData.results; // <-- Access the nested results object
+
+    if (!data) {
+        showStatus("Received success response, but results data is missing.", true);
+        console.error("Missing 'results' key in response:", responseData);
+        return;
     }
+
+    // Check for specific error messages returned within results
+    if (data.error_message) {
+         showStatus(`Analysis Info: ${data.error_message}`); // Display info/warning but don't show full results
+         resultsArea.style.display = 'none'; // Hide the results grid
+         return;
+    }
+
+
+    // Update basic info using keys from main.py
+    fileNameSpan.textContent = data.file_name || 'N/A';
+    verdictSpan.textContent = data.verdict || 'Error'; // Backend provides 'REAL' or 'FAKE'
+    totalFramesSpan.textContent = data.frames_analyzed ?? 'N/A'; // Use frames_analyzed
+    realCountSpan.textContent = data.real_frames ?? 'N/A';
+    deepfakeCountSpan.textContent = data.fake_frames ?? 'N/A'; // Use fake_frames
+
+    // Use the confidence provided by the backend
+    const confidence = data.confidence !== undefined ? Math.round(data.confidence) : 0; // Use backend's verdict confidence
+    confidenceMeter.style.width = `${confidence}%`;
+    confidenceValue.textContent = `${confidence}%`;
+
+    // Update meter color based on confidence (adjust thresholds if needed)
+    if (confidence >= 70) {
+        confidenceMeter.style.backgroundColor = '#2b8a3e'; // Green
+    } else if (confidence >= 40) {
+        confidenceMeter.style.backgroundColor = '#e67700'; // Orange
+    } else {
+        confidenceMeter.style.backgroundColor = '#c92a2a'; // Red
+    }
+
+    // Apply verdict styling based on backend verdict
+    verdictSpan.className = 'verdict-badge'; // Reset classes
+    if (data.verdict === 'REAL') {
+         verdictSpan.classList.add(`verdict-REAL`);
+    } else if (data.verdict === 'FAKE') {
+         verdictSpan.classList.add(`verdict-FAKE`);
+    } // Add handling for 'UNKNOWN' if necessary
+
+    resultsArea.style.display = 'block';
+
+    // Scroll to results
+    setTimeout(() => {
+        resultsArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+}
   
     function calculateConfidence(data) {
       if (data.total_frames_processed && data.real_frames !== undefined && data.deepfake_frames !== undefined) {
