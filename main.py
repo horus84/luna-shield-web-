@@ -238,23 +238,19 @@ def analyze_video(video_path: Path) -> Optional[Dict[str, Any]]:
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Serves the main index.html page."""
-    logger.info("Serving index.html")
+    logger.info("Attempting to serve Home page (index.html)") # Check logs for this
+    template_name = "index.html"
+    template_path = templates_dir / template_name # Ensure templates_dir is correct
+    if not template_path.is_file():
+        logger.error(f"Home page template file not found at: {template_path}") # Check logs for this!
+        raise HTTPException(status_code=404, detail="Home page template not found.")
     try:
-        # Ensure template file exists
-        template_path = templates_dir / "index.html"
-        if not template_path.is_file():
-            logger.error("index.html template not found!")
-            raise HTTPException(status_code=500, detail="Server configuration error: Missing main page template.")
-        return templates.TemplateResponse("index.html", {"request": request})
+        return templates.TemplateResponse(template_name, {"request": request})
     except Exception as e:
-         logger.exception("Error serving index.html")
-         # Provide a generic error response
-         raise HTTPException(status_code=500, detail="Internal Server Error retrieving page.")
+        logger.exception(f"Error rendering Home page template ({template_name}): {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error retrieving Home page.")
 
-
-# --- Serve other HTML pages (if they exist) ---
-# You might need similar endpoints for analytics.html, about.html, contact.html
-# Example for about.html:
+# --- Serve other HTML pages ---
 @app.get("/about.html", response_class=HTMLResponse)
 async def read_about(request: Request):
     """Serves the about.html page."""
@@ -273,6 +269,37 @@ async def read_about(request: Request):
         raise HTTPException(status_code=500, detail="Internal Server Error retrieving page.")
 
 # Add similar endpoints for analytics.html and contact.html if needed
+@app.get("/analytics.html", response_class=HTMLResponse)
+async def read_about(request: Request):
+    """Serves the analytics.html page."""
+    logger.info("Serving analytics.html")
+    try:
+        template_path = templates_dir / "analytics.html"
+        if not template_path.is_file():
+             logger.warning("analytics.html template not found!")
+             # Return 404 if page doesn't exist
+             raise HTTPException(status_code=404, detail="Analytics page not found.")
+        return templates.TemplateResponse("analytics.html", {"request": request})
+    except HTTPException:
+        raise # Re-raise HTTPException (like 404)
+    except Exception as e:
+        logger.exception("Error serving analytics.html")
+        raise HTTPException(status_code=500, detail="Internal Server Error retrieving page.")
+    
+@app.get("/contact.html", response_class=HTMLResponse)
+async def read_contact(request: Request):
+    """Serves the contact.html page."""
+    logger.info("Attempting to serve Contact page (contact.html)")
+    template_name = "contact.html"
+    template_path = templates_dir / template_name # Ensure templates_dir is defined correctly
+    if not template_path.is_file():
+        logger.error(f"Contact page template file not found at: {template_path}") # CHECK YOUR LOGS FOR THIS!
+        raise HTTPException(status_code=404, detail="Contact page template not found.")
+    try:
+        return templates.TemplateResponse(template_name, {"request": request})
+    except Exception as e:
+        logger.exception(f"Error rendering Contact page template ({template_name}): {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error retrieving Contact page.")    
 
 
 @app.post("/analyze", response_class=JSONResponse)
