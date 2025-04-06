@@ -11,8 +11,8 @@ python-multipart # Required by FastAPI for file uploads/form data
 aiofiles         # For asynchronous file operations (often used by FastAPI)
 
 # --- Machine Learning & Computer Vision ---
-torch==1.13.11+cpu            # PyTorch core library (Check CPU/GPU version needed!)
-torchvision      # PyTorch library for vision tasks, models, transforms (Check CPU/GPU version!)
+torch==2.1.1+cpu            # PyTorch core library (Check CPU/GPU version needed!)
+torchvision==0.14.1+cpu      # PyTorch library for vision tasks, models, transforms (Check CPU/GPU version!)
 opencv-python-headless # OpenCV for video/image processing (server-friendly version)
 numpy            # Fundamental package for numerical computing
 Pillow           # Python Imaging Library (Fork) for image manipulation
