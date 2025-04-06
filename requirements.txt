@@ -11,7 +11,7 @@ python-multipart # Required by FastAPI for file uploads/form data
 aiofiles         # For asynchronous file operations (often used by FastAPI)
 
 # --- Machine Learning & Computer Vision ---
-torch            # PyTorch core library (Check CPU/GPU version needed!)
+torch==1.13.11+cpu            # PyTorch core library (Check CPU/GPU version needed!)
 torchvision      # PyTorch library for vision tasks, models, transforms (Check CPU/GPU version!)
 opencv-python-headless # OpenCV for video/image processing (server-friendly version)
 numpy            # Fundamental package for numerical computing
@@ -24,7 +24,3 @@ seaborn          # For enhanced visualizations (heatmap)
 tqdm             # Progress bars for loops
 reportlab        # For generating PDF reports
 
-# Note: Review package versions. It's best practice to pin versions
-# using 'pip freeze > requirements.txt' in your working development environment.
-# Example: fastapi==0.95.1
-# Example: torch==1.13.1+cpu (if using CPU-only)
